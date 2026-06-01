@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MovieHub</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#111827;
+    color:white;
+}
+
+header{
+    background:linear-gradient(135deg,#dc2626,#7f1d1d);
+    padding:25px;
+    text-align:center;
+}
+
+header h1{
+    font-size:3rem;
+}
+
+header p{
+    margin-top:10px;
+    color:#ddd;
+}
+
+.search-box{
+    text-align:center;
+    margin:25px;
+}
+
+.search-box input{
+    width:80%;
+    max-width:500px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.movies{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+    padding:30px;
+}
+
+.card{
+    background:#1f2937;
+    border-radius:12px;
+    overflow:hidden;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:scale(1.04);
+    box-shadow:0 10px 20px rgba(0,0,0,.4);
+}
+
+.card img{
+    width:100%;
+    height:360px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:15px;
+}
+
+.card-content h3{
+    margin-bottom:8px;
+}
+
+.genre{
+    color:#60a5fa;
+    font-size:14px;
+}
+
+.rating{
+    color:#fbbf24;
+    margin-top:8px;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.85);
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.modal-content{
+    width:90%;
+    max-width:900px;
+    background:white;
+    color:black;
+    border-radius:15px;
+    overflow:hidden;
+    position:relative;
+}
+
+.modal-content img{
+    width:100%;
+    height:450px;
+    object-fit:cover;
+}
+
+.details{
+    padding:25px;
+}
+
+.close{
+    position:absolute;
+    right:15px;
+    top:15px;
+    border:none;
+    background:red;
+    color:white;
+    padding:10px 15px;
+    cursor:pointer;
+    border-radius:8px;
+    font-size:18px;
+}
+
+footer{
+    text-align:center;
+    padding:20px;
+    color:#aaa;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🎬 MovieHub</h1>
+    <p>Discover Popular Movies</p>
+</header>
+
+<div class="search-box">
+    <input type="text" id="search" placeholder="Search movies...">
+</div>
+
+<div class="movies" id="movieContainer"></div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <button class="close" onclick="closeModal()">✖</button>
+
+        <img id="modalImage">
+
+        <div class="details">
+            <h2 id="modalTitle"></h2>
+            <p><strong>Genre:</strong> <span id="modalGenre"></span></p>
+            <p><strong>Year:</strong> <span id="modalYear"></span></p>
+            <p><strong>Rating:</strong> ⭐ <span id="modalRating"></span></p>
+            <br>
+            <p id="modalDescription"></p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    MovieHub © 2026
+</footer>
+
+<script>
+const movies = [
+{
+title:"Avatar",
+year:"2009",
+genre:"Sci-Fi",
+rating:"7.9",
+image:"https://picsum.photos/id/1011/800/1200",
+description:"A marine enters the world of Pandora and finds himself torn between duty and a new life."
+},
+{
+title:"Titanic",
+year:"1997",
+genre:"Romance",
+rating:"7.9",
+image:"https://picsum.photos/id/1015/800/1200",
+description:"A tragic love story aboard the RMS Titanic."
+},
+{
+title:"The Dark Knight",
+year:"2008",
+genre:"Action",
+rating:"9.0",
+image:"https://picsum.photos/id/1016/800/1200",
+description:"Batman faces his greatest enemy, the Joker."
+},
+{
+title:"Inception",
+year:"2010",
+genre:"Sci-Fi",
+rating:"8.8",
+image:"https://picsum.photos/id/1025/800/1200",
+description:"A thief steals secrets through dream-sharing technology."
+},
+{
+title:"Interstellar",
+year:"2014",
+genre:"Adventure",
+rating:"8.7",
+image:"https://picsum.photos/id/1035/800/1200",
+description:"Astronauts travel through a wormhole to save humanity."
+},
+{
+title:"The Matrix",
+year:"1999",
+genre:"Sci-Fi",
+rating:"8.7",
+image:"https://picsum.photos/id/1040/800/1200",
+description:"A hacker learns the truth about reality."
+},
+{
+title:"Gladiator",
+year:"2000",
+genre:"Historical",
+rating:"8.5",
+image:"https://picsum.photos/id/1041/800/1200",
+description:"A Roman general seeks revenge after betrayal."
+},
+{
+title:"Top Gun: Maverick",
+year:"2022",
+genre:"Action",
+rating:"8.4",
+image:"https://picsum.photos/id/1043/800/1200",
+description:"Maverick trains a new generation of pilots."
+},
+{
+title:"Oppenheimer",
+year:"2023",
+genre:"Biography",
+rating:"8.6",
+image:"https://picsum.photos/id/1050/800/1200",
+description:"The story of the father of the atomic bomb."
+},
+{
+title:"Dune",
+year:"2021",
+genre:"Sci-Fi",
+rating:"8.1",
+image:"https://picsum.photos/id/1060/800/1200",
+description:"A young nobleman fights for the future of his people."
+},
+{
+title:"Joker",
+year:"2019",
+genre:"Drama",
+rating:"8.4",
+image:"https://picsum.photos/id/1068/800/1200",
+description:"The origin story of Gotham's infamous villain."
+},
+{
+title:"Spider-Man: No Way Home",
+year:"2021",
+genre:"Superhero",
+rating:"8.3",
+image:"https://picsum.photos/id/1074/800/1200",
+description:"Spider-Man faces threats from the multiverse."
+}
+];
+
+const container = document.getElementById("movieContainer");
+
+function displayMovies(list){
+    container.innerHTML = "";
+
+    list.forEach(movie=>{
+        const card=document.createElement("div");
+        card.className="card";
+
+        card.innerHTML=`
+            <img src="${movie.image}">
+            <div class="card-content">
+                <h3>${movie.title}</h3>
+                <p>${movie.year}</p>
+                <p class="genre">${movie.genre}</p>
+                <p class="rating">⭐ ${movie.rating}</p>
+            </div>
+        `;
+
+        card.onclick=()=>{
+            document.getElementById("modalTitle").textContent=movie.title;
+            document.getElementById("modalGenre").textContent=movie.genre;
+            document.getElementById("modalYear").textContent=movie.year;
+            document.getElementById("modalRating").textContent=movie.rating;
+            document.getElementById("modalDescription").textContent=movie.description;
+            document.getElementById("modalImage").src=movie.image;
+
+            document.getElementById("modal").style.display="flex";
+        };
+
+        container.appendChild(card);
+    });
+}
+
+displayMovies(movies);
+
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+
+document.getElementById("search").addEventListener("input", e=>{
+    const text=e.target.value.toLowerCase();
+
+    const filtered=movies.filter(movie =>
+        movie.title.toLowerCase().includes(text) ||
+        movie.genre.toLowerCase().includes(text)
+    );
+
+    displayMovies(filtered);
+});
+
+window.onclick=function(e){
+    if(e.target===document.getElementById("modal")){
+        closeModal();
+    }
+}
+</script>
+
+</body>
+</html>
